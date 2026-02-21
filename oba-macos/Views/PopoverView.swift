@@ -114,8 +114,9 @@ struct PopoverView: View {
                     let data = try await OneBusAwayManager.shared.getArrivalsAndDeparturesForStop(stopId: stop.id, apiKey: store.apiKey)
                     
                     // Filter and sort arrivals
+                    let enabledRouteIds = stop.routes.filter { $0.isEnabled }.map { $0.id }
                     let sorted = data.entry.arrivalsAndDepartures
-                        .filter { stop.routeIds.contains($0.routeId) }
+                        .filter { enabledRouteIds.contains($0.routeId) }
                         .sorted { $0.bestArrivalTime < $1.bestArrivalTime }
                     
                     newArrivals[stop.id] = sorted

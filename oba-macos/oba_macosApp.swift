@@ -16,6 +16,7 @@ struct oba_macosApp: App {
             SettingsView()
                 .environmentObject(store)
         }
+        .defaultSize(width: 500, height: 600)
         
         MenuBarExtra("OneBusAway", systemImage: "bus") {
             PopoverView()

@@ -37,13 +37,26 @@ class Store: ObservableObject {
             savedStops = decoded
         }
     }
-    
-    func toggleStop(stop: OBAStop, routeIds: [String]) {
+    func toggleStop(stop: OBAStop, availableRoutes: [String: OBARoute]) {
         if let index = savedStops.firstIndex(where: { $0.id == stop.id }) {
             savedStops.remove(at: index)
         } else {
-            let newStop = SavedStop(id: stop.id, name: stop.name, routeIds: routeIds)
+            let savedRoutes = stop.routeIds.map { routeId in
+                SavedRoute(
+                    id: routeId,
+                    name: availableRoutes[routeId]?.displayName ?? "Route \(routeId)",
+                    isEnabled: true
+                )
+            }
+            let newStop = SavedStop(id: stop.id, name: stop.name, routes: savedRoutes)
             savedStops.append(newStop)
+        }
+    }
+    
+    func toggleRoute(stopId: String, routeId: String) {
+        if let stopIndex = savedStops.firstIndex(where: { $0.id == stopId }),
+           let routeIndex = savedStops[stopIndex].routes.firstIndex(where: { $0.id == routeId }) {
+            savedStops[stopIndex].routes[routeIndex].isEnabled.toggle()
         }
     }
     

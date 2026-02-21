@@ -103,8 +103,14 @@ struct OBAArrivalAndDeparture: Codable, Identifiable {
 }
 
 // MARK: - App Models (For persisting user selection)
+struct SavedRoute: Codable, Identifiable, Hashable {
+    let id: String
+    let name: String
+    var isEnabled: Bool
+}
+
 struct SavedStop: Codable, Identifiable, Hashable {
     let id: String
     let name: String
-    let routeIds: [String] // IDs of the routes the user wants to see for this stop
+    var routes: [SavedRoute] 
 }

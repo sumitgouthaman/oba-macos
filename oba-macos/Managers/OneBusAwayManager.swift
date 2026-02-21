@@ -36,6 +36,22 @@ class OneBusAwayManager {
         return data
     }
     
+    func searchStops(query: String, apiKey: String) async throws -> OBAStopsForLocationData {
+        guard !apiKey.isEmpty else { throw OBAError.missingAPIKey }
+        
+        let path = "/search/stop.json"
+        var components = URLComponents(string: baseURL + path)!
+        components.queryItems = [
+            URLQueryItem(name: "key", value: apiKey),
+            URLQueryItem(name: "input", value: query)
+        ]
+        
+        guard let url = components.url else { throw OBAError.invalidURL }
+        
+        let data: OBAStopsForLocationData = try await performRequest(url: url)
+        return data
+    }
+    
     func getArrivalsAndDeparturesForStop(stopId: String, minutesBefore: Int = 5, minutesAfter: Int = 30, apiKey: String) async throws -> OBAArrivalsAndDeparturesForStopData {
         guard !apiKey.isEmpty else { throw OBAError.missingAPIKey }
         
