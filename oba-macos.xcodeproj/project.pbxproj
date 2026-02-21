@@ -10,9 +10,22 @@
 		5DEB24662F481F6E00B323B9 /* oba-macos.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "oba-macos.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		5D72BA722F4971E300145ACE /* Exceptions for "oba-macos" folder in "oba-macos" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 5DEB24652F481F6E00B323B9 /* oba-macos */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		5DEB24682F481F6E00B323B9 /* oba-macos */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				5D72BA722F4971E300145ACE /* Exceptions for "oba-macos" folder in "oba-macos" target */,
+			);
 			path = "oba-macos";
 			sourceTree = "<group>";
 		};
@@ -269,6 +282,7 @@
 				ENABLE_RESOURCE_ACCESS_USB = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "oba-macos/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "OBA for Menu Bar";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.navigation";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
@@ -314,6 +328,7 @@
 				ENABLE_RESOURCE_ACCESS_USB = NO;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "oba-macos/Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "OBA for Menu Bar";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.navigation";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
