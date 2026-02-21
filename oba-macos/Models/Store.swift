@@ -2,10 +2,17 @@ import Foundation
 import SwiftUI
 import Combine
 
+@MainActor
 class Store: ObservableObject {
     @Published var apiKey: String = "" {
         didSet {
             UserDefaults.standard.set(apiKey, forKey: apiKeyKey)
+        }
+    }
+    
+    @Published var serverURL: String = "https://api.pugetsound.onebusaway.org/api/where" {
+        didSet {
+            UserDefaults.standard.set(serverURL, forKey: serverURLKey)
         }
     }
     
@@ -17,10 +24,14 @@ class Store: ObservableObject {
     
     private let stopsKey = "OBASavedStops"
     private let apiKeyKey = "OBAApiKey"
+    private let serverURLKey = "OBAServerURL"
     
     init() {
-        if let storedApiKey = UserDefaults.standard.string(forKey: "OBAApiKey") {
+        if let storedApiKey = UserDefaults.standard.string(forKey: apiKeyKey) {
             self.apiKey = storedApiKey
+        }
+        if let storedURL = UserDefaults.standard.string(forKey: serverURLKey) {
+            self.serverURL = storedURL
         }
         loadStops()
     }
@@ -37,6 +48,7 @@ class Store: ObservableObject {
             savedStops = decoded
         }
     }
+
     func toggleStop(stop: OBAStop, availableRoutes: [String: OBARoute]) {
         if let index = savedStops.firstIndex(where: { $0.id == stop.id }) {
             savedStops.remove(at: index)

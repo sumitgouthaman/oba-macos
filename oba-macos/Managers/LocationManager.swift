@@ -7,6 +7,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     @Published var location: CLLocation?
     @Published var authorizationStatus: CLAuthorizationStatus
+    @Published var locationError: Error?
     
     override init() {
         authorizationStatus = manager.authorizationStatus
@@ -16,6 +17,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     func requestLocation() {
+        locationError = nil
         manager.requestWhenInUseAuthorization()
         manager.requestLocation()
     }
@@ -32,6 +34,6 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        print("Location Manager error: \(error.localizedDescription)")
+        locationError = error
     }
 }

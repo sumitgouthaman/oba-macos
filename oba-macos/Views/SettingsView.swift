@@ -1,5 +1,6 @@
 import SwiftUI
 import CoreLocation
+import Combine
 
 struct SettingsView: View {
     @EnvironmentObject var store: Store
@@ -10,6 +11,7 @@ struct SettingsView: View {
     @State private var searchQuery: String = ""
     @State private var isLoadingStops = false
     @State private var errorMessage: String?
+    @State private var pendingLocationSearch = false
     
     var body: some View {
         ScrollView {
@@ -18,11 +20,19 @@ struct SettingsView: View {
                     .font(.title)
                     .bold()
                 
-                GroupBox("API Key") {
-                    SecureField("API Key", text: $store.apiKey)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .help("Enter your OneBusAway API Key")
-                        .padding(4)
+                GroupBox("API Configuration") {
+                    VStack(alignment: .leading, spacing: 8) {
+                        SecureField("API Key", text: $store.apiKey)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .help("Enter your OneBusAway API Key")
+                        
+                        TextField("Server URL", text: $store.serverURL)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .help("Base URL of the OneBusAway server (without trailing slash)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(4)
                 }
                 
                 GroupBox("Find Stops") {
@@ -95,6 +105,19 @@ struct SettingsView: View {
             .padding(.bottom, 20)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        // React to location being updated after a "Find Nearby Stops" request
+        .onReceive(locationManager.$location) { location in
+            guard pendingLocationSearch, let loc = location else { return }
+            pendingLocationSearch = false
+            performNearbyFetch(with: loc)
+        }
+        // React to location errors surfaced from the delegate
+        .onReceive(locationManager.$locationError) { error in
+            guard pendingLocationSearch, let error = error else { return }
+            pendingLocationSearch = false
+            isLoadingStops = false
+            errorMessage = error.localizedDescription
+        }
     }
     
     private func performSearch() {
@@ -106,11 +129,11 @@ struct SettingsView: View {
             do {
                 let data = try await OneBusAwayManager.shared.searchStops(
                     query: searchQuery,
-                    apiKey: store.apiKey
+                    apiKey: store.apiKey,
+                    serverURL: store.serverURL
                 )
                 await MainActor.run {
                     self.nearbyStops = data.list
-                    // Populate routes
                     for route in data.references.routes {
                         self.nearbyRoutes[route.id] = route
                     }
@@ -126,38 +149,33 @@ struct SettingsView: View {
     }
     
     private func fetchNearbyStops() {
+        pendingLocationSearch = true
+        isLoadingStops = true
+        errorMessage = nil
         locationManager.requestLocation()
-        
-        // Wait a bit for location
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            guard let loc = locationManager.location else {
-                errorMessage = "Could not get current location."
-                return
-            }
-            
-            isLoadingStops = true
-            errorMessage = nil
-            
-            Task {
-                do {
-                    let data = try await OneBusAwayManager.shared.getStopsForLocation(
-                        lat: loc.coordinate.latitude,
-                        lon: loc.coordinate.longitude,
-                        apiKey: store.apiKey
-                    )
-                    await MainActor.run {
-                        self.nearbyStops = data.list
-                        // Populate routes
-                        for route in data.references.routes {
-                            self.nearbyRoutes[route.id] = route
-                        }
-                        self.isLoadingStops = false
+        // Actual fetch is triggered via .onReceive(locationManager.$location)
+    }
+    
+    private func performNearbyFetch(with loc: CLLocation) {
+        Task {
+            do {
+                let data = try await OneBusAwayManager.shared.getStopsForLocation(
+                    lat: loc.coordinate.latitude,
+                    lon: loc.coordinate.longitude,
+                    apiKey: store.apiKey,
+                    serverURL: store.serverURL
+                )
+                await MainActor.run {
+                    self.nearbyStops = data.list
+                    for route in data.references.routes {
+                        self.nearbyRoutes[route.id] = route
                     }
-                } catch {
-                    await MainActor.run {
-                        self.errorMessage = error.localizedDescription
-                        self.isLoadingStops = false
-                    }
+                    self.isLoadingStops = false
+                }
+            } catch {
+                await MainActor.run {
+                    self.errorMessage = error.localizedDescription
+                    self.isLoadingStops = false
                 }
             }
         }

@@ -71,7 +71,8 @@ struct OBAStopWithArrivals: Codable {
 }
 
 struct OBAArrivalAndDeparture: Codable, Identifiable {
-    var id: String { tripId + stopId }
+    // Use a separator to prevent "a"+"bc" == "ab"+"c" collisions
+    var id: String { "\(tripId)_\(stopId)" }
     
     let routeId: String
     let tripId: String
@@ -96,9 +97,11 @@ struct OBAArrivalAndDeparture: Codable, Identifiable {
         return Date(timeIntervalSince1970: TimeInterval(time) / 1000.0)
     }
     
-    var minutesUntilArrival: Int {
+    /// Returns nil if the arrival is already in the past.
+    var minutesUntilArrival: Int? {
         let diff = bestArrivalTime.timeIntervalSinceNow
-        return max(0, Int(diff / 60.0))
+        guard diff >= 0 else { return nil }
+        return Int(diff / 60.0)
     }
 }
 

@@ -7,22 +7,23 @@ enum OBAError: Error {
     case apiError(String)
     case decodingError(Error)
     case missingAPIKey
+    case missingServerURL
 }
 
 class OneBusAwayManager {
     static let shared = OneBusAwayManager()
     private let logger = Logger(subsystem: "com.oba-macos", category: "Network")
-    private let baseURL = "https://api.pugetsound.onebusaway.org/api/where"
     
     private init() {}
     
     // MARK: - Endpoints
     
-    func getStopsForLocation(lat: Double, lon: Double, radius: Int = 500, apiKey: String) async throws -> OBAStopsForLocationData {
+    func getStopsForLocation(lat: Double, lon: Double, radius: Int = 500, apiKey: String, serverURL: String) async throws -> OBAStopsForLocationData {
         guard !apiKey.isEmpty else { throw OBAError.missingAPIKey }
+        guard !serverURL.isEmpty else { throw OBAError.missingServerURL }
         
         let path = "/stops-for-location.json"
-        var components = URLComponents(string: baseURL + path)!
+        var components = URLComponents(string: serverURL + path)!
         components.queryItems = [
             URLQueryItem(name: "key", value: apiKey),
             URLQueryItem(name: "lat", value: String(lat)),
@@ -36,11 +37,12 @@ class OneBusAwayManager {
         return data
     }
     
-    func searchStops(query: String, apiKey: String) async throws -> OBAStopsForLocationData {
+    func searchStops(query: String, apiKey: String, serverURL: String) async throws -> OBAStopsForLocationData {
         guard !apiKey.isEmpty else { throw OBAError.missingAPIKey }
+        guard !serverURL.isEmpty else { throw OBAError.missingServerURL }
         
         let path = "/search/stop.json"
-        var components = URLComponents(string: baseURL + path)!
+        var components = URLComponents(string: serverURL + path)!
         components.queryItems = [
             URLQueryItem(name: "key", value: apiKey),
             URLQueryItem(name: "input", value: query)
@@ -52,11 +54,12 @@ class OneBusAwayManager {
         return data
     }
     
-    func getArrivalsAndDeparturesForStop(stopId: String, minutesBefore: Int = 5, minutesAfter: Int = 30, apiKey: String) async throws -> OBAArrivalsAndDeparturesForStopData {
+    func getArrivalsAndDeparturesForStop(stopId: String, minutesBefore: Int = 5, minutesAfter: Int = 30, apiKey: String, serverURL: String) async throws -> OBAArrivalsAndDeparturesForStopData {
         guard !apiKey.isEmpty else { throw OBAError.missingAPIKey }
+        guard !serverURL.isEmpty else { throw OBAError.missingServerURL }
         
         let path = "/arrivals-and-departures-for-stop/\(stopId).json"
-        var components = URLComponents(string: baseURL + path)!
+        var components = URLComponents(string: serverURL + path)!
         components.queryItems = [
             URLQueryItem(name: "key", value: apiKey),
             URLQueryItem(name: "minutesBefore", value: String(minutesBefore)),
